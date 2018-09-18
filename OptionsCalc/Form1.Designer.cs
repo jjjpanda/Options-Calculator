@@ -59,7 +59,7 @@
             this.richTextBox1.Location = new System.Drawing.Point(24, 158);
             this.richTextBox1.Name = "richTextBox1";
             this.richTextBox1.Size = new System.Drawing.Size(606, 209);
-            this.richTextBox1.TabIndex = 5;
+            this.richTextBox1.TabIndex = 4;
             this.richTextBox1.Text = "";
             this.richTextBox1.MouseHover += new System.EventHandler(this.richTextBox1_Hover);
             // 
@@ -147,7 +147,7 @@
             0});
             this.numericUpDown1.Name = "numericUpDown1";
             this.numericUpDown1.Size = new System.Drawing.Size(120, 35);
-            this.numericUpDown1.TabIndex = 4;
+            this.numericUpDown1.TabIndex = 5;
             this.numericUpDown1.Value = new decimal(new int[] {
             21,
             0,
@@ -203,14 +203,16 @@
             // openToolStripMenuItem
             // 
             this.openToolStripMenuItem.Name = "openToolStripMenuItem";
-            this.openToolStripMenuItem.Size = new System.Drawing.Size(189, 42);
+            this.openToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.O)));
+            this.openToolStripMenuItem.Size = new System.Drawing.Size(360, 42);
             this.openToolStripMenuItem.Text = "Open";
             this.openToolStripMenuItem.Click += new System.EventHandler(this.openToolStripMenuItem_Click);
             // 
             // saveToolStripMenuItem
             // 
             this.saveToolStripMenuItem.Name = "saveToolStripMenuItem";
-            this.saveToolStripMenuItem.Size = new System.Drawing.Size(189, 42);
+            this.saveToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.S)));
+            this.saveToolStripMenuItem.Size = new System.Drawing.Size(360, 42);
             this.saveToolStripMenuItem.Text = "Save";
             this.saveToolStripMenuItem.Click += new System.EventHandler(this.saveToolStripMenuItem_Click);
             // 
@@ -220,7 +222,7 @@
             this.checkBox1.Location = new System.Drawing.Point(662, 256);
             this.checkBox1.Name = "checkBox1";
             this.checkBox1.Size = new System.Drawing.Size(139, 33);
-            this.checkBox1.TabIndex = 17;
+            this.checkBox1.TabIndex = 8;
             this.checkBox1.Text = "Show All";
             this.checkBox1.UseVisualStyleBackColor = true;
             // 
@@ -233,6 +235,7 @@
             this.textBox5.Text = "IV ";
             this.textBox5.Visible = false;
             this.textBox5.MouseHover += new System.EventHandler(this.textBox5_Hover);
+            this.textBox5.MouseUp += new System.Windows.Forms.MouseEventHandler(this.textBox5_MouseClick);
             // 
             // Form1
             // 

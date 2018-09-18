@@ -29,6 +29,7 @@ namespace OptionsCalc
         public Form1()
         {
             InitializeComponent();
+            textBox5.ContextMenu = new ContextMenu();
         }
 
         static double[,] Copy(double[,] x)
@@ -234,11 +235,11 @@ namespace OptionsCalc
                     //
                     try
                     {
-                        if (data[count].Equals("Long", StringComparison.InvariantCultureIgnoreCase) || data[count].Equals("Buy", StringComparison.InvariantCultureIgnoreCase))
+                        if (data[count].Equals("Long", StringComparison.InvariantCultureIgnoreCase) || data[count].Equals("Buy", StringComparison.InvariantCultureIgnoreCase) || data[count].Equals("L", StringComparison.InvariantCultureIgnoreCase))
                         {
                             isLong = true;
                         }
-                        else if (data[count].Equals("Short", StringComparison.InvariantCultureIgnoreCase) || data[count].Equals("Sell", StringComparison.InvariantCultureIgnoreCase) || data[count].Equals("Write", StringComparison.InvariantCultureIgnoreCase))
+                        else if (data[count].Equals("Short", StringComparison.InvariantCultureIgnoreCase) || data[count].Equals("Sell", StringComparison.InvariantCultureIgnoreCase) || data[count].Equals("Write", StringComparison.InvariantCultureIgnoreCase) || data[count].Equals("S", StringComparison.InvariantCultureIgnoreCase))
                         {
                             isLong = false;
                         }
@@ -399,7 +400,7 @@ namespace OptionsCalc
                         }
 
                     }
-                    if (IVchangeEnd < IVchangeStart || IVchangeEnd < 0 || IVchangeStart< 0)
+                    if ((rangeOfIVChange == 2 && IVchangeEnd < IVchangeStart) || IVchangeEnd < 0 || IVchangeStart< 0)
                     {
                         Error("Invalid IV Change Input");
                         doesIVChange = false;
@@ -534,11 +535,11 @@ namespace OptionsCalc
                         {
                             if (isLong)
                             {
-                                profit[i, j] = numOfContracts * ((-1 * priceOfOption) + (underlying - x));
+                                profit[i, j] = Math.Max(numOfContracts * ((-1 * priceOfOption) + (underlying - x)), (-1 * priceOfOption));
                             }
                             else if (!isLong)
                             {
-                                profit[i, j] = numOfContracts * (priceOfOption - (underlying - x));
+                                profit[i, j] = Math.Min(numOfContracts * (priceOfOption - (underlying - x)), priceOfOption);
                             }
 
                         }
@@ -546,11 +547,11 @@ namespace OptionsCalc
                         {
                             if (isLong)
                             {
-                                profit[i, j] = numOfContracts * ((-1 * priceOfOption) + (-1 * underlying + x));
+                                profit[i, j] = Math.Max(numOfContracts * ((-1 * priceOfOption) + (-1 * underlying + x)), (-1 * priceOfOption));
                             }
                             else if (!isLong)
                             {
-                                profit[i, j] = numOfContracts * (priceOfOption - (-1 * underlying + x));
+                                profit[i, j] = Math.Min(numOfContracts * (priceOfOption - (-1 * underlying + x)), priceOfOption);
                             }
                         }
 
@@ -655,6 +656,14 @@ namespace OptionsCalc
             TextBox TB = (TextBox)sender;
             ToolTip tt = new ToolTip();
             tt.Show("Example: IV 9/21 -0.5 or IV 9/21-9/27 0.3", TB, TB.Width, 0, 4000);
+        }
+
+        private void textBox5_MouseClick(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Right)
+            {
+                textBox5.Clear();
+            }
         }
 
         private void saveToolStripMenuItem_Click(object sender, EventArgs e)
