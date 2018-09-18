@@ -104,7 +104,7 @@ namespace OptionsCalc
             {
                 textBox5.Visible = false;
                 String input = richTextBox1.Text;
-                String[] lines = input.Split('\n');
+                String[] lines = input.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
 
                 //
                 //IV CRUSH check
@@ -113,12 +113,12 @@ namespace OptionsCalc
                 DateTime[] IVdates = new DateTime[2];
                 int rangeOfIVChange = 0;
                 double IVchangeRate = 0;
-                String[] IVdata = textBox5.Text.ToString().Split(' ');
+                String[] IVdata = textBox5.Text.ToString().Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
                 if (IVdata[0].Equals("IV"))
                 {
                     if (IVdata.Length == 3)
                     {
-                        string[] dates = IVdata[1].Split('-');
+                        string[] dates = IVdata[1].Split(new[] { '-' }, StringSplitOptions.RemoveEmptyEntries);
                         if (dates.Length == 1 || dates.Length == 2)
                         {
                             rangeOfIVChange = dates.Length;
@@ -160,7 +160,7 @@ namespace OptionsCalc
 
                 for (int a = 0; a < lines.Length; a++)
                 {
-                    String[] data = lines[a].Split(' ');
+                    String[] data = lines[a].Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
                     if (data.Length <= 1)
                     {
                         continue;
@@ -273,7 +273,7 @@ namespace OptionsCalc
                     // Number of Contracts
                     //
                     int numOfContracts = 1;
-                    if (data.Length > count)
+                    if (data.Length > count && !data[count].Equals(""))
                     {
                         try
                         {
@@ -582,9 +582,9 @@ namespace OptionsCalc
 
                     mergedProfitList.Add(profit);
 
-                    if (checkBox1.Checked && lines.Length > 1)
+                    if (checkBox1.Checked || lines.Length <= 1)
                     {
-                        Form2 form2 = new Form2(percentProfit, today);
+                        Form2 form2 = new Form2(percentProfit, today, lines[a]);
                         form2.Show();
                     }
                     /*
@@ -635,8 +635,11 @@ namespace OptionsCalc
                             mergedProfit[i, j] = Math.Round(mergedProfit[i, j], 2);
                         }
                     }
-                    Form2 form2merged = new Form2(mergedProfit, DateTime.Today);
-                    form2merged.Show();
+                    if (lines.Length > 1)
+                    {
+                        Form2 form2merged = new Form2(mergedProfit, DateTime.Today, "Strategy");
+                        form2merged.Show();
+                    }
                     mergedProfitList.Clear();
                     mergedEntryCost = 0;
 
@@ -648,14 +651,14 @@ namespace OptionsCalc
         {
             RichTextBox TB = (RichTextBox)sender;
             ToolTip tt = new ToolTip();
-            tt.Show("Example: 12/31 90 C Buy 1.93 x2", TB, TB.Width/2, 0, 4000);
+            //tt.Show("Example: 12/31 90 C Buy 1.93 x2", TB, TB.Width/2, 0, 4000);
         }
 
         private void textBox5_Hover(object sender, EventArgs e)
         {
             TextBox TB = (TextBox)sender;
             ToolTip tt = new ToolTip();
-            tt.Show("Example: IV 9/21 -0.5 or IV 9/21-9/27 0.3", TB, TB.Width, 0, 4000);
+            //tt.Show("Example: IV 9/21 -0.5 or IV 9/21-9/27 0.3", TB, TB.Width, 0, 4000);
         }
 
         private void textBox5_MouseClick(object sender, MouseEventArgs e)
