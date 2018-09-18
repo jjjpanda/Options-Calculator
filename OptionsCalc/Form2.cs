@@ -35,21 +35,22 @@ namespace OptionsCalc
             dataGridView1.Columns[0].HeaderText = "Price";
             for (int k = 1; k < data.GetLength(0); k++)
             {
-                dataGridView1.Rows[k].Height = 50;
+                dataGridView1.Rows[k].Height = 10;
             }
             for (int k = 1; k < data.GetLength(1); k++)
             {
-                dataGridView1.Columns[k].Width = 50;
+                dataGridView1.Columns[k].Width = 60;
                 dataGridView1.Columns[k].HeaderText = today.AddDays(k-1).ToShortDateString();
             }
             dataGridView1.Columns[0].Frozen = true;
         }
 
-        public Form2(double[,] graph, DateTime today)
+        public Form2(double[,] graph, DateTime today, string title)
         {
             InitializeComponent();
             data = graph;
             this.today = today;
+            Text = title;
             PopulateDataGrid(graph);
         }
 
