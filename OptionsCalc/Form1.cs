@@ -751,8 +751,9 @@ namespace OptionsCalc
 
        private void richTextBox1_Hover(object sender, EventArgs e)
         {
+            
             RichTextBox TB = (RichTextBox)sender;
-            tt.Show("Example: 12/31 90 C Buy 1.93 x2 or 12/31 90 P Short 2.3 @3.41 X4", TB, TB.Width/2, 0, 4000);
+            tt.Show("Example: 12/31 90 C Buy 1.93 x2 or 12/31 90 P Short 2.3 @3.41 X4", TB, TB.Width/2, TB.Height, 4000);
         }
 
         private void textBox5_Hover(object sender, EventArgs e)
