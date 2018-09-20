@@ -48,6 +48,7 @@
             this.saveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.checkBox1 = new System.Windows.Forms.CheckBox();
             this.textBox5 = new System.Windows.Forms.TextBox();
+            this.checkBox2 = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).BeginInit();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
@@ -237,11 +238,22 @@
             this.textBox5.MouseHover += new System.EventHandler(this.textBox5_Hover);
             this.textBox5.MouseUp += new System.Windows.Forms.MouseEventHandler(this.textBox5_MouseClick);
             // 
+            // checkBox2
+            // 
+            this.checkBox2.AutoSize = true;
+            this.checkBox2.Location = new System.Drawing.Point(662, 295);
+            this.checkBox2.Name = "checkBox2";
+            this.checkBox2.Size = new System.Drawing.Size(120, 33);
+            this.checkBox2.TabIndex = 19;
+            this.checkBox2.Text = "$ Profit";
+            this.checkBox2.UseVisualStyleBackColor = true;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(14F, 29F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(848, 405);
+            this.Controls.Add(this.checkBox2);
             this.Controls.Add(this.textBox5);
             this.Controls.Add(this.checkBox1);
             this.Controls.Add(this.textBox3);
@@ -292,6 +304,7 @@
         private System.Windows.Forms.ToolStripMenuItem saveToolStripMenuItem;
         private System.Windows.Forms.CheckBox checkBox1;
         private System.Windows.Forms.TextBox textBox5;
+        private System.Windows.Forms.CheckBox checkBox2;
     }
 }
 

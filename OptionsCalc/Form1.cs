@@ -20,11 +20,12 @@ namespace OptionsCalc
         double x;
         double priceOfOption;
         
-
         bool isLong;
         bool isCall;
         List<double[,]> mergedProfitList = new List<double[,]>();
         double mergedEntryCost = 0;
+
+        ToolTip tt = new ToolTip();
 
         public Form1()
         {
@@ -100,8 +101,10 @@ namespace OptionsCalc
             {
                 textBox5.Visible = true;
             }
+
             if (e.Button == MouseButtons.Left)
             {
+
                 textBox5.Visible = false;
                 String input = richTextBox1.Text;
                 String[] lines = input.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
@@ -151,13 +154,16 @@ namespace OptionsCalc
                 }
                 else if(textBox5.Text == "")
                 {
-
+                    //Do nothing, I suppose.
                 }
                 else
                 {
                     Error("Invalid IV Change Input");
                 }
 
+                //
+                // Check all options written in text box
+                //
                 for (int a = 0; a < lines.Length; a++)
                 {
                     String[] data = lines[a].Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
@@ -270,9 +276,39 @@ namespace OptionsCalc
                     count++;
 
                     //
-                    // Number of Contracts
+                    // Number of Contracts or Bought at Price
                     //
                     int numOfContracts = 1;
+                    double optionBoughtAt = 0.0;
+                    if (data.Length > count && !data[count].Equals(""))
+                    {
+                        try
+                        {
+                            if (data[count][0] == 'x' || data[count][0] == 'X' || data[count][0] == '*')
+                            {
+                                numOfContracts = Convert.ToInt16(data[count].Substring(1));
+                            }
+                            else if (data[count][0] == '@')
+                            {
+                                optionBoughtAt = Convert.ToDouble(data[count].Substring(1));
+                            }
+                            else
+                            {
+                                Error("Invalid");
+                                return;
+                            }
+                        }
+                        catch
+                        {
+                            Error("Invalid");
+                            return;
+                        }
+                    }
+                    count++;
+
+                    //
+                    // Num of Contracts if not handled yet
+                    //
                     if (data.Length > count && !data[count].Equals(""))
                     {
                         try
@@ -294,6 +330,9 @@ namespace OptionsCalc
                         }
                     }
 
+                    //
+                    // div yield and interest rate
+                    //
                     try
                     {
                         priceUnderlying = Convert.ToDouble(textBox1.Text);
@@ -314,8 +353,10 @@ namespace OptionsCalc
                         return;
                     }
 
+                    //
+                    // Add price of option to Arrays
+                    //
                     range = Convert.ToInt16(numericUpDown1.Value);
-
                     double[,] profit = new double[range, daysLeft + 3];
                     for (int i = 0; i < profit.GetLength(0); i++)
                     {
@@ -323,22 +364,49 @@ namespace OptionsCalc
                         {
                             if (isLong)
                             {
-                                profit[i, j] = -1 * numOfContracts * priceOfOption;
+                                if (optionBoughtAt == 0)
+                                {
+                                    profit[i, j] = -1 * numOfContracts * priceOfOption;
+                                }
+                                else
+                                {
+                                    profit[i, j] = -1 * numOfContracts * optionBoughtAt;
+                                }
                             }
                             else if (!isLong)
                             {
-                                profit[i, j] = numOfContracts * priceOfOption;
+                                if (optionBoughtAt == 0)
+                                {
+                                    profit[i, j] = numOfContracts * priceOfOption;
+                                }
+                                else
+                                {
+                                    profit[i, j] = numOfContracts * optionBoughtAt;
+                                }
                             }
                         }
                     }
-
                     if (isLong)
                     {
-                        mergedEntryCost -= numOfContracts * priceOfOption;
+                        if (optionBoughtAt == 0)
+                        {
+                            mergedEntryCost -= numOfContracts * priceOfOption;
+                        }
+                        else
+                        {
+                            mergedEntryCost -= numOfContracts * optionBoughtAt;
+                        }
                     }
                     else if (!isLong)
                     {
-                        mergedEntryCost += numOfContracts * priceOfOption;
+                        if (optionBoughtAt == 0)
+                        {
+                            mergedEntryCost += numOfContracts * priceOfOption;
+                        }
+                        else
+                        {
+                            mergedEntryCost += numOfContracts * optionBoughtAt;
+                        }
                     }
 
                     //
@@ -358,9 +426,12 @@ namespace OptionsCalc
                         profit[i, 0] = priceUnderlying * Math.Pow(percentInterval, (range - 1) / 2) * Math.Pow(1 / percentInterval, i);
                     }
 
+                    //
+                    // Calculate IV
+                    //
                     double iv = 0.20;
                     double priceOfOptionTheoretical = 0;
-                    while (Loss(priceOfOption, priceOfOptionTheoretical) > 0.000025)
+                    while (Loss(priceOfOption, priceOfOptionTheoretical) > 0.00025)
                     {
                         if (isCall)
                         {
@@ -370,26 +441,19 @@ namespace OptionsCalc
                         {
                             priceOfOptionTheoretical = -1 * priceUnderlying * Math.Exp(-1 * divYield * t) * CNDF(-1 * D1(priceUnderlying, x, t, divYield, r, iv)) + x * Math.Exp(-1 * r * t) * CNDF(-1 * D2(priceUnderlying, x, t, divYield, r, iv));
                         }
-
                         if (priceOfOption > priceOfOptionTheoretical)
                         {
-                            iv *= 1.2;
+                            iv += 0.00001;
                         }
                         if (priceOfOption < priceOfOptionTheoretical)
                         {
-                            iv *= 0.8;
+                            iv -= 0.00001;
                         }
                     }
 
-                    /* call greeks
-                    double delta = Math.Exp(-1 * divYield * t) * CNDF(D1(priceUnderlying, x, t, divYield, r, iv));
-                    double gamma = Math.Exp(-1 * divYield * t) * NDF(D1(priceUnderlying, x, t, divYield, r, iv)) / (priceUnderlying * iv * Math.Sqrt(t));
-                    double theta = (-(NDF(D1(priceUnderlying, x, t, divYield, r, iv)) / (2 * Math.Sqrt(t)) * priceUnderlying * iv * Math.Exp(-1 * divYield * t)) +
-                            (divYield * priceUnderlying * Math.Exp(-1 * divYield * t) * CNDF(D1(priceUnderlying, x, t, divYield, r, iv)))
-                            ) / 365;
-                    double vega = priceUnderlying / 100 * Math.Exp(-1 * divYield * t) * Math.Sqrt(t) * NDF(D1(priceUnderlying, x, t, divYield, r, iv));
-                    double rho = t / 100 * x * CNDF(D2(priceUnderlying, x, t, divYield, r, iv));
-                    */
+                    //
+                    // IV Change Math
+                    //
                     int IVchangeStart = 0, IVchangeEnd = 0 ;
                     if (doesIVChange)
                     {
@@ -398,34 +462,33 @@ namespace OptionsCalc
                         {
                             IVchangeEnd = (IVdates[1] - today).Days;
                         }
-
                     }
                     if ((rangeOfIVChange == 2 && IVchangeEnd < IVchangeStart) || IVchangeEnd < 0 || IVchangeStart< 0)
                     {
                         Error("Invalid IV Change Input");
                         doesIVChange = false;
                     }
-
                     IVchangeStart += 2;
                     IVchangeEnd += 2;
-
                     if(IVchangeRate < -1)
                     {
                         Error("Invalid IV Change Input");
                         doesIVChange = false;
                     }
-
                     if(rangeOfIVChange == 2)
                     {
                         IVchangeRate /= (IVchangeEnd - IVchangeStart);
                     }
 
+                    //
+                    // Calculate Profit
+                    //
                     for (int i = 0; i < profit.GetLength(0); i++)
                     {
                         double underlying = profit[i, 0];
                         for (int j = 1; j < profit.GetLength(1) - 1; j++)
                         {
-                            double tPrime = (profit.GetLength(1) - j) / 365.0;
+                            double tPrime = ((profit.GetLength(1) - j)-2) / 365.0;
                          
                             if (doesIVChange && rangeOfIVChange == 1 && j >= IVchangeStart)
                             {
@@ -526,7 +589,7 @@ namespace OptionsCalc
                         }
                     }
 
-                    //@ expiry
+                    //profit at expiry
                     for (int i = 0; i < profit.GetLength(0); i++)
                     {
                         double underlying = profit[i, 0];
@@ -535,11 +598,25 @@ namespace OptionsCalc
                         {
                             if (isLong)
                             {
-                                profit[i, j] = Math.Max(numOfContracts * ((-1 * priceOfOption) + (underlying - x)), (-1 * priceOfOption));
+                                if (optionBoughtAt == 0)
+                                {
+                                    profit[i, j] = numOfContracts * Math.Max(((-1 * priceOfOption) + (underlying - x)), (-1 * priceOfOption));
+                                }
+                                else
+                                {
+                                    profit[i, j] = numOfContracts * Math.Max(((-1 * optionBoughtAt) + (underlying - x)), (-1 * optionBoughtAt));
+                                }
                             }
                             else if (!isLong)
                             {
-                                profit[i, j] = Math.Min(numOfContracts * (priceOfOption - (underlying - x)), priceOfOption);
+                                if (optionBoughtAt == 0)
+                                {
+                                    profit[i, j] = numOfContracts * Math.Min((priceOfOption - (underlying - x)), priceOfOption);
+                                }
+                                else
+                                {
+                                    profit[i, j] = numOfContracts * Math.Min((optionBoughtAt - (underlying - x)), optionBoughtAt);
+                                }
                             }
 
                         }
@@ -547,62 +624,81 @@ namespace OptionsCalc
                         {
                             if (isLong)
                             {
-                                profit[i, j] = Math.Max(numOfContracts * ((-1 * priceOfOption) + (-1 * underlying + x)), (-1 * priceOfOption));
+                                if (optionBoughtAt == 0)
+                                {
+                                    profit[i, j] = Math.Max(numOfContracts * ((-1 * priceOfOption) + (-1 * underlying + x)), (-1 * priceOfOption));
+                                }
+                                else
+                                {
+                                    profit[i, j] = Math.Max(numOfContracts * ((-1 * optionBoughtAt) + (-1 * underlying + x)), (-1 * optionBoughtAt));
+                                }
                             }
                             else if (!isLong)
                             {
-                                profit[i, j] = Math.Min(numOfContracts * (priceOfOption - (-1 * underlying + x)), priceOfOption);
+                                if (optionBoughtAt == 0)
+                                {
+                                    profit[i, j] = Math.Min(numOfContracts * (priceOfOption - (-1 * underlying + x)), priceOfOption);
+                                }
+                                else
+                                {
+                                    profit[i, j] = Math.Min(numOfContracts * (optionBoughtAt - (-1 * underlying + x)), optionBoughtAt);
+                                }
                             }
                         }
-
                     }
 
-                    /*
-                     for (int i = 0; i < profit.GetLength(0); i++)
-                     {
-                         for (int j = 0; j < profit.GetLength(1); j++)
-                         {
-                             Console.Write(profit[i, j] + " ");
-                         }
-                         Console.Write(Environment.NewLine + Environment.NewLine);
-                     }
-                     Console.ReadLine();
-                     */
-
-                    double[,] percentProfit = Copy(profit);
-                    for (int i = 0; i < percentProfit.GetLength(0); i++)
+                    //
+                    //print profit
+                    //
+                    double[,] copyOfProfit = Copy(profit);
+                    for (int i = 0; i < copyOfProfit.GetLength(0); i++)
                     {
-                        for (int j = 1; j < percentProfit.GetLength(1); j++)
+                        for (int j = 1; j < copyOfProfit.GetLength(1); j++)
                         {
-                            percentProfit[i, j] /= (numOfContracts * priceOfOption / 100);
-                            percentProfit[i, j] = Math.Round(percentProfit[i, j], 2);
+                            if (!checkBox2.Checked)
+                            {
+                                if(optionBoughtAt == 0)
+                                {
+                                    copyOfProfit[i, j] /= (numOfContracts * priceOfOption / 100);
+                                }
+                                else
+                                {
+                                    copyOfProfit[i, j] /= (numOfContracts * optionBoughtAt / 100);
+                                }
+                            }
+                            else
+                            {
+                                if (optionBoughtAt == 0)
+                                {
+                                    copyOfProfit[i, j] /= (priceOfOption/(Math.Abs(priceOfOption)) / 100);
+                                }
+                                else
+                                {
+                                    copyOfProfit[i, j] /= (optionBoughtAt/(Math.Abs(optionBoughtAt)) / 100);
+                                }
+                            }
+                            copyOfProfit[i, j] = Math.Round(copyOfProfit[i, j], 2);
                             profit[i, j] = Math.Round(profit[i, j], 2);
                         }
                     }
 
                     mergedProfitList.Add(profit);
 
-                    if (checkBox1.Checked || lines.Length <= 1)
+                   if (checkBox1.Checked || lines.Length <= 1)
                     {
-                        Form2 form2 = new Form2(percentProfit, today, lines[a]);
+                        Form2 form2 = new Form2(copyOfProfit, today, lines[a]);
                         form2.Show();
                     }
-                    /*
-                    Form3 form3 = new Form3(x, priceOfOption, isCall, isLong);
-                    form3.Show();
-                    */
                 }
 
-
-
-
+                //
+                // Merged options calculations
+                //
                 if (richTextBox1.Text != "")
                 {
                     int minimum = 0;
                     minimum = mergedProfitList.Min(profit => profit.GetLength(1));
                     double[,] mergedProfit = new double[range, minimum];
-
-
                     for (int i = 0; i < range; i++)
                     {
                         for (int j = 1; j < minimum; j++)
@@ -614,51 +710,55 @@ namespace OptionsCalc
                             }
                         }
                     }
-
-                    /*
-                    for (int i = 0; i < mergedProfit.GetLength(0); i++)
-                    {
-                        for (int j = 0; j < mergedProfit.GetLength(1); j++)
-                        {
-                            Console.Write(mergedProfit[i, j] + " ");
-                        }
-                        Console.Write(Environment.NewLine + Environment.NewLine);
-                    }
-                    Console.ReadLine();
-                    */
-
                     for (int i = 0; i < mergedProfit.GetLength(0); i++)
                     {
                         for (int j = 1; j < mergedProfit.GetLength(1); j++)
                         {
-                            mergedProfit[i, j] /= (-1 * mergedEntryCost / 100);
+                            if (!checkBox2.Checked) 
+                            {
+                                mergedProfit[i, j] /= (Math.Abs(mergedEntryCost) / 100);
+                            }
+                            else
+                            {
+                                mergedProfit[i, j] *= 100;
+                            }
                             mergedProfit[i, j] = Math.Round(mergedProfit[i, j], 2);
                         }
                     }
                     if (lines.Length > 1)
                     {
-                        Form2 form2merged = new Form2(mergedProfit, DateTime.Today, "Strategy");
+                        Form2 form2merged;
+                        if (mergedEntryCost < 0)
+                        {
+                            form2merged = new Form2(mergedProfit, DateTime.Today, "Strategy, Entry Debit: " + -1 * mergedEntryCost);
+                        }
+                        else if (mergedEntryCost > 0)
+                        {
+                            form2merged = new Form2(mergedProfit, DateTime.Today, "Strategy, Entry Credit: " + mergedEntryCost);
+                        }
+                        else
+                        {
+                            form2merged = new Form2(mergedProfit, DateTime.Today, "Strategy, Entry Net Cost: " + mergedEntryCost);
+                        }
                         form2merged.Show();
                     }
                     mergedProfitList.Clear();
                     mergedEntryCost = 0;
-
                 }
+
             }
         }
 
        private void richTextBox1_Hover(object sender, EventArgs e)
         {
             RichTextBox TB = (RichTextBox)sender;
-            ToolTip tt = new ToolTip();
-            //tt.Show("Example: 12/31 90 C Buy 1.93 x2", TB, TB.Width/2, 0, 4000);
+            tt.Show("Example: 12/31 90 C Buy 1.93 x2 or 12/31 90 P Short 2.3 @3.41 X4", TB, TB.Width/2, 0, 4000);
         }
 
         private void textBox5_Hover(object sender, EventArgs e)
         {
             TextBox TB = (TextBox)sender;
-            ToolTip tt = new ToolTip();
-            //tt.Show("Example: IV 9/21 -0.5 or IV 9/21-9/27 0.3", TB, TB.Width, 0, 4000);
+            tt.Show("Example: IV 9/21 -0.5 or IV 9/21-9/27 0.3", TB, TB.Width, 0, 4000);
         }
 
         private void textBox5_MouseClick(object sender, MouseEventArgs e)
@@ -686,7 +786,6 @@ namespace OptionsCalc
                                          textBox5.Text.ToString() + Environment.NewLine +
                                          richTextBox1.Text.ToString());
             }
-            
         }
 
         private void openToolStripMenuItem_Click(object sender, EventArgs e)
@@ -711,8 +810,7 @@ namespace OptionsCalc
                     for(int i = 6; i < linesOfText.Length; i++)
                     {
                         richTextBox1.Text += linesOfText[i] + "\n";
-                    }
-                    
+                    }  
                 }
                 catch
                 {
@@ -721,5 +819,32 @@ namespace OptionsCalc
                 }
             }
         }
+
+        /*
+        Form3 form3 = new Form3(x, priceOfOption, isCall, isLong);
+        form3.Show();
+        */
+
+        /*
+        for (int i = 0; i < mergedProfit.GetLength(0); i++)
+        {
+            for (int j = 0; j < mergedProfit.GetLength(1); j++)
+            {
+                Console.Write(mergedProfit[i, j] + " ");
+            }
+            Console.Write(Environment.NewLine + Environment.NewLine);
+        }
+        Console.ReadLine();
+        */
+
+        /* call greeks
+        double delta = Math.Exp(-1 * divYield * t) * CNDF(D1(priceUnderlying, x, t, divYield, r, iv));
+        double gamma = Math.Exp(-1 * divYield * t) * NDF(D1(priceUnderlying, x, t, divYield, r, iv)) / (priceUnderlying * iv * Math.Sqrt(t));
+        double theta = (-(NDF(D1(priceUnderlying, x, t, divYield, r, iv)) / (2 * Math.Sqrt(t)) * priceUnderlying * iv * Math.Exp(-1 * divYield * t)) +
+                (divYield * priceUnderlying * Math.Exp(-1 * divYield * t) * CNDF(D1(priceUnderlying, x, t, divYield, r, iv)))
+                ) / 365;
+        double vega = priceUnderlying / 100 * Math.Exp(-1 * divYield * t) * Math.Sqrt(t) * NDF(D1(priceUnderlying, x, t, divYield, r, iv));
+        double rho = t / 100 * x * CNDF(D2(priceUnderlying, x, t, divYield, r, iv));
+        */
     }
 }
