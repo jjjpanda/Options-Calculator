@@ -31,18 +31,20 @@ namespace OptionsCalc
                 dataTable.Rows.Add(newRow);
             }
             this.dataGridView1.DataSource = dataTable;
-            dataGridView1.Columns[0].Width = 50;
+            dataGridView1.Columns[0].Width = 40;
             dataGridView1.Columns[0].HeaderText = "Price";
             for (int k = 1; k < data.GetLength(0); k++)
             {
-                dataGridView1.Rows[k].Height = 10;
+                dataGridView1.Rows[k].Height = 0;
             }
             for (int k = 1; k < data.GetLength(1); k++)
             {
-                dataGridView1.Columns[k].Width = 60;
+                dataGridView1.Columns[k].Width = 40;
                 dataGridView1.Columns[k].HeaderText = today.AddDays(k-1).ToShortDateString();
+                dataGridView1.Columns[k].SortMode = DataGridViewColumnSortMode.NotSortable;
             }
             dataGridView1.Columns[0].Frozen = true;
+
         }
 
         public Form2(double[,] graph, DateTime today, string title)
