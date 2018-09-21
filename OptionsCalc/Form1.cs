@@ -102,7 +102,7 @@ namespace OptionsCalc
                 textBox5.Visible = true;
             }
 
-            if (e.Button == MouseButtons.Left)
+            if(e.Button == MouseButtons.Left)
             {
 
                 textBox5.Visible = false;
@@ -208,7 +208,6 @@ namespace OptionsCalc
                         Error("Invalid Strike Price");
                         return;
                     }
-
                     count++;
 
                     //
@@ -304,6 +303,10 @@ namespace OptionsCalc
                             return;
                         }
                     }
+                    if (optionBoughtAt == 0)
+                    {
+                        optionBoughtAt = priceOfOption;
+                    }
                     count++;
 
                     //
@@ -364,49 +367,21 @@ namespace OptionsCalc
                         {
                             if (isLong)
                             {
-                                if (optionBoughtAt == 0)
-                                {
-                                    profit[i, j] = -1 * numOfContracts * priceOfOption;
-                                }
-                                else
-                                {
-                                    profit[i, j] = -1 * numOfContracts * optionBoughtAt;
-                                }
+                                profit[i, j] = -1 * numOfContracts * optionBoughtAt;
                             }
                             else if (!isLong)
                             {
-                                if (optionBoughtAt == 0)
-                                {
-                                    profit[i, j] = numOfContracts * priceOfOption;
-                                }
-                                else
-                                {
-                                    profit[i, j] = numOfContracts * optionBoughtAt;
-                                }
+                                profit[i, j] = numOfContracts * optionBoughtAt;
                             }
                         }
                     }
                     if (isLong)
                     {
-                        if (optionBoughtAt == 0)
-                        {
-                            mergedEntryCost -= numOfContracts * priceOfOption;
-                        }
-                        else
-                        {
-                            mergedEntryCost -= numOfContracts * optionBoughtAt;
-                        }
+                        mergedEntryCost -= numOfContracts * optionBoughtAt;
                     }
                     else if (!isLong)
                     {
-                        if (optionBoughtAt == 0)
-                        {
-                            mergedEntryCost += numOfContracts * priceOfOption;
-                        }
-                        else
-                        {
-                            mergedEntryCost += numOfContracts * optionBoughtAt;
-                        }
+                        mergedEntryCost += numOfContracts * optionBoughtAt;
                     }
 
                     //
@@ -598,51 +573,23 @@ namespace OptionsCalc
                         {
                             if (isLong)
                             {
-                                if (optionBoughtAt == 0)
-                                {
-                                    profit[i, j] = numOfContracts * Math.Max(((-1 * priceOfOption) + (underlying - x)), (-1 * priceOfOption));
-                                }
-                                else
-                                {
-                                    profit[i, j] = numOfContracts * Math.Max(((-1 * optionBoughtAt) + (underlying - x)), (-1 * optionBoughtAt));
-                                }
+                                profit[i, j] = numOfContracts * Math.Max(((-1 * optionBoughtAt) + (underlying - x)), (-1 * optionBoughtAt));
                             }
                             else if (!isLong)
                             {
-                                if (optionBoughtAt == 0)
-                                {
-                                    profit[i, j] = numOfContracts * Math.Min((priceOfOption - (underlying - x)), priceOfOption);
-                                }
-                                else
-                                {
-                                    profit[i, j] = numOfContracts * Math.Min((optionBoughtAt - (underlying - x)), optionBoughtAt);
-                                }
+                                profit[i, j] = numOfContracts * Math.Min((optionBoughtAt - (underlying - x)), optionBoughtAt);                             
                             }
 
                         }
                         else if (!isCall)
                         {
                             if (isLong)
-                            {
-                                if (optionBoughtAt == 0)
-                                {
-                                    profit[i, j] = Math.Max(numOfContracts * ((-1 * priceOfOption) + (-1 * underlying + x)), (-1 * priceOfOption));
-                                }
-                                else
-                                {
-                                    profit[i, j] = Math.Max(numOfContracts * ((-1 * optionBoughtAt) + (-1 * underlying + x)), (-1 * optionBoughtAt));
-                                }
+                            { 
+                                profit[i, j] = Math.Max(numOfContracts * ((-1 * optionBoughtAt) + (-1 * underlying + x)), (-1 * optionBoughtAt));
                             }
                             else if (!isLong)
                             {
-                                if (optionBoughtAt == 0)
-                                {
-                                    profit[i, j] = Math.Min(numOfContracts * (priceOfOption - (-1 * underlying + x)), priceOfOption);
-                                }
-                                else
-                                {
-                                    profit[i, j] = Math.Min(numOfContracts * (optionBoughtAt - (-1 * underlying + x)), optionBoughtAt);
-                                }
+                                profit[i, j] = Math.Min(numOfContracts * (optionBoughtAt - (-1 * underlying + x)), optionBoughtAt);
                             }
                         }
                     }
@@ -657,25 +604,11 @@ namespace OptionsCalc
                         {
                             if (!checkBox2.Checked)
                             {
-                                if(optionBoughtAt == 0)
-                                {
-                                    copyOfProfit[i, j] /= (numOfContracts * priceOfOption / 100);
-                                }
-                                else
-                                {
-                                    copyOfProfit[i, j] /= (numOfContracts * optionBoughtAt / 100);
-                                }
+                                copyOfProfit[i, j] /= (numOfContracts * optionBoughtAt / 100);
                             }
                             else
                             {
-                                if (optionBoughtAt == 0)
-                                {
-                                    copyOfProfit[i, j] /= (priceOfOption/(Math.Abs(priceOfOption)) / 100);
-                                }
-                                else
-                                {
-                                    copyOfProfit[i, j] /= (optionBoughtAt/(Math.Abs(optionBoughtAt)) / 100);
-                                }
+                                copyOfProfit[i, j] /= (optionBoughtAt/(Math.Abs(optionBoughtAt)) / 100);
                             }
                             copyOfProfit[i, j] = Math.Round(copyOfProfit[i, j], 2);
                             profit[i, j] = Math.Round(profit[i, j], 2);
@@ -689,6 +622,7 @@ namespace OptionsCalc
                         Form2 form2 = new Form2(copyOfProfit, today, lines[a]);
                         form2.Show();
                     }
+                   
                 }
 
                 //
@@ -745,7 +679,6 @@ namespace OptionsCalc
                     mergedProfitList.Clear();
                     mergedEntryCost = 0;
                 }
-
             }
         }
 
@@ -822,7 +755,7 @@ namespace OptionsCalc
         }
 
         /*
-        Form3 form3 = new Form3(x, priceOfOption, isCall, isLong);
+        Form3 form3 = new Form3(x, optionBoughtAt, isCall, isLong);
         form3.Show();
         */
 
