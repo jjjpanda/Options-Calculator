@@ -726,7 +726,7 @@ namespace OptionsCalc
                         }
                         form2merged.Show();
                     }
-                    if (checkBox3.Checked && !checkBox1.Checked)
+                    if (checkBox3.Checked && !checkBox1.Checked && lines.Length > 1)
                     {
                         greeks[5] /= lines.Length; 
                         Form3 form3 = new Form3(GetColumn(mergedProfit, 0), GetColumn(mergedProfit, mergedProfit.GetLength(1) - 1), greeks, "Strategy");
