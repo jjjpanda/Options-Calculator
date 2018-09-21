@@ -12,50 +12,27 @@ namespace OptionsCalc
 {
     public partial class Form3 : Form
     {
-        double strike, price;
-        bool isCall, isLong;
-        public Form3(double x, double price, bool isCall, bool isLong)
-        {
+        double[] xData, yData, greeks;
+
+        public Form3(double[] x, double[] y, double[] greeks, string title)
+        { 
             InitializeComponent();
-            strike = x;
-            this.price = price;
-            this.isCall = isCall;
-            this.isLong = isLong;
+            xData = x;
+            yData = y;
+            this.greeks = greeks;
+            this.Text = title;
         }
 
         private void Form3_Load(object sender, EventArgs e)
         {
             chart1.Series[0].ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
-            if (isCall)
-            {
-                double[] xValues = new double[4] { strike + (price * -1), strike + (price * -0), strike + (price * 1), strike + (price * 2) };
-                if (isLong)
-                {
-                    double[] yValues = new double[4] {-1*price, -1*price, 0, price};
-                    chart1.Series[0].Points.DataBindXY(xValues, yValues);
-                }
-                else
-                {
-                    double[] yValues = new double[4] {price, price, 0, -1*price};
-                    chart1.Series[0].Points.DataBindXY(xValues, yValues);
-                }
-            }
-            else
-            {
-                double[] xValues = new double[4] { strike + (price * -2), strike + (price * -1), strike + (price * 0), strike + (price * 1) };
-                if (isLong)
-                {
-                   double[] yValues = new double[4] { price, 0, -1*price, -1*price};
-                    chart1.Series[0].Points.DataBindXY(xValues, yValues);
-                }
-                else
-                {
-                    double[] yValues = new double[4] { -1*price, 0, price, price};
-                    chart1.Series[0].Points.DataBindXY(xValues, yValues);
-                }
+            chart1.Series[0].Points.DataBindXY(xData, yData);
+            richTextBox1.Text = printGreeks(greeks);
+        }
 
-            }
-
+        private String printGreeks(double[] arr)
+        {
+            return "Delta: " + arr[0] + "\n" + "Gamma: " + arr[1] + "\n" + "Theta: " + arr[2] + "\n" + "Vega: " + arr[3] + "\n" + "Rho: " + arr[4] + "\n" + "IV: " + arr[5] + "\n";
         }
     }
 }

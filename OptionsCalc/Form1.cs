@@ -25,6 +25,8 @@ namespace OptionsCalc
         List<double[,]> mergedProfitList = new List<double[,]>();
         double mergedEntryCost = 0;
 
+        double[] greeks = new double[6];
+
         ToolTip tt = new ToolTip();
 
         public Form1()
@@ -429,31 +431,72 @@ namespace OptionsCalc
                     //
                     // IV Change Math
                     //
-                    int IVchangeStart = 0, IVchangeEnd = 0 ;
+                    int IVchangeStart = 0, IVchangeEnd = 0;
                     if (doesIVChange)
                     {
                         IVchangeStart = (IVdates[0] - today).Days;
-                        if(rangeOfIVChange == 2)
+                        if (rangeOfIVChange == 2)
                         {
                             IVchangeEnd = (IVdates[1] - today).Days;
                         }
                     }
-                    if ((rangeOfIVChange == 2 && IVchangeEnd < IVchangeStart) || IVchangeEnd < 0 || IVchangeStart< 0)
+                    if ((rangeOfIVChange == 2 && IVchangeEnd < IVchangeStart) || IVchangeEnd < 0 || IVchangeStart < 0)
                     {
                         Error("Invalid IV Change Input");
                         doesIVChange = false;
                     }
                     IVchangeStart += 2;
                     IVchangeEnd += 2;
-                    if(IVchangeRate < -1)
+                    if (IVchangeRate < -1)
                     {
                         Error("Invalid IV Change Input");
                         doesIVChange = false;
                     }
-                    if(rangeOfIVChange == 2)
+                    if (rangeOfIVChange == 2)
                     {
                         IVchangeRate /= (IVchangeEnd - IVchangeStart);
                     }
+
+                    //
+                    //Calculate Greeks
+                    //
+                    double delta = 0, gamma = 0, theta = 0, vega = 0, rho = 0;
+                    if (isCall)
+                    {
+                        delta = Math.Exp(-1 * divYield * t) * CNDF(D1(priceUnderlying, x, t, divYield, r, iv));
+                        gamma = Math.Exp(-1 * divYield * t) * NDF(D1(priceUnderlying, x, t, divYield, r, iv)) / (priceUnderlying * iv * Math.Sqrt(t));
+                        theta = (-(NDF(D1(priceUnderlying, x, t, divYield, r, iv)) / (2 * Math.Sqrt(t)) * priceUnderlying * iv * Math.Exp(-1 * divYield * t)) +
+                                (divYield * priceUnderlying * Math.Exp(-1 * divYield * t) * CNDF(D1(priceUnderlying, x, t, divYield, r, iv))) -
+                                (r * x * Math.Exp(-1 * r * t) * NDF(D2(priceUnderlying, x, t, divYield, r, iv)))
+                                ) / 365;
+                        vega = priceUnderlying / 100 * Math.Exp(-1 * divYield * t) * Math.Sqrt(t) * NDF(D1(priceUnderlying, x, t, divYield, r, iv));
+                        rho = t / 100 * Math.Exp(-1 * r * t) * x * CNDF(D2(priceUnderlying, x, t, divYield, r, iv));
+                    }
+                    else if (!isCall)
+                    {
+                        delta = Math.Exp(-1 * divYield * t) * (CNDF(D1(priceUnderlying, x, t, divYield, r, iv)) - 1);
+                        gamma = Math.Exp(-1 * divYield * t) * NDF(D1(priceUnderlying, x, t, divYield, r, iv)) / (priceUnderlying * iv * Math.Sqrt(t));
+                        theta = (-(NDF(D1(priceUnderlying, x, t, divYield, r, iv)) / (2 * Math.Sqrt(t)) * priceUnderlying * iv * Math.Exp(-1 * divYield * t)) -
+                                (divYield * priceUnderlying * Math.Exp(-1 * divYield * t) * CNDF(-1 * D1(priceUnderlying, x, t, divYield, r, iv))) -
+                                (r * x * Math.Exp(-1 * r * t) * NDF(-1 * D2(priceUnderlying, x, t, divYield, r, iv)))
+                                ) / 365;
+                        vega = priceUnderlying / 100 * Math.Exp(-1 * divYield * t) * Math.Sqrt(t) * NDF(D1(priceUnderlying, x, t, divYield, r, iv));
+                        rho = t / -100 * Math.Exp(-1 * r * t) * x * CNDF(-1 * D2(priceUnderlying, x, t, divYield, r, iv));
+                    }
+                    if (!isLong)
+                    {
+                        delta *= -1;
+                        gamma *= -1;
+                        theta *= -1;
+                        vega *= -1;
+                        rho *= -1;
+                    }
+                    greeks[0] += delta;
+                    greeks[1] += gamma;
+                    greeks[2] += theta;
+                    greeks[3] += vega;
+                    greeks[4] += rho;
+                    greeks[5] += iv;
 
                     //
                     // Calculate Profit
@@ -597,32 +640,39 @@ namespace OptionsCalc
                     //
                     //print profit
                     //
-                    double[,] copyOfProfit = Copy(profit);
-                    for (int i = 0; i < copyOfProfit.GetLength(0); i++)
+                    double[,] roundedProfit = Copy(profit);
+                    for (int i = 0; i < roundedProfit.GetLength(0); i++)
                     {
-                        for (int j = 1; j < copyOfProfit.GetLength(1); j++)
+                        for (int j = 0; j < roundedProfit.GetLength(1); j++)
                         {
-                            if (!checkBox2.Checked)
+                            if (j > 0)
                             {
-                                copyOfProfit[i, j] /= (numOfContracts * optionBoughtAt / 100);
+                                if (!checkBox2.Checked)
+                                {
+                                    roundedProfit[i, j] /= (numOfContracts * optionBoughtAt / 100);
+                                }
+                                else
+                                {
+                                    roundedProfit[i, j] /= (optionBoughtAt / (Math.Abs(optionBoughtAt)) / 100);
+                                }
                             }
-                            else
-                            {
-                                copyOfProfit[i, j] /= (optionBoughtAt/(Math.Abs(optionBoughtAt)) / 100);
-                            }
-                            copyOfProfit[i, j] = Math.Round(copyOfProfit[i, j], 2);
+                            roundedProfit[i, j] = Math.Round(roundedProfit[i, j], 2);
                             profit[i, j] = Math.Round(profit[i, j], 2);
                         }
                     }
 
                     mergedProfitList.Add(profit);
 
-                   if (checkBox1.Checked || lines.Length <= 1)
+                    if (checkBox1.Checked || lines.Length <= 1)
                     {
-                        Form2 form2 = new Form2(copyOfProfit, today, lines[a]);
+                        Form2 form2 = new Form2(roundedProfit, today, lines[a]);
                         form2.Show();
+                        if (checkBox3.Checked)
+                        {
+                            Form3 form3 = new Form3(GetColumn(roundedProfit, 0), GetColumn(roundedProfit, roundedProfit.GetLength(1) - 1), new double[] { delta, gamma, theta, vega, rho, iv }, lines[a]);
+                            form3.Show();
+                        }
                     }
-                   
                 }
 
                 //
@@ -675,6 +725,11 @@ namespace OptionsCalc
                             form2merged = new Form2(mergedProfit, DateTime.Today, "Strategy, Entry Net Cost: " + mergedEntryCost);
                         }
                         form2merged.Show();
+                    }
+                    if (checkBox3.Checked && !checkBox1.Checked)
+                    {
+                        Form3 form3 = new Form3(GetColumn(mergedProfit, 0), GetColumn(mergedProfit, mergedProfit.GetLength(1) - 1), greeks, "Strategy");
+                        form3.Show();
                     }
                     mergedProfitList.Clear();
                     mergedEntryCost = 0;
@@ -754,10 +809,12 @@ namespace OptionsCalc
             }
         }
 
-        /*
-        Form3 form3 = new Form3(x, optionBoughtAt, isCall, isLong);
-        form3.Show();
-        */
+        public double[] GetColumn(double[,] matrix, int columnNumber)
+        {
+            return Enumerable.Range(0, matrix.GetLength(0))
+                    .Select(x => matrix[x, columnNumber])
+                    .ToArray();
+        }
 
         /*
         for (int i = 0; i < mergedProfit.GetLength(0); i++)
