@@ -31,7 +31,7 @@ namespace OptionsCalc
                 dataTable.Rows.Add(newRow);
             }
             this.dataGridView1.DataSource = dataTable;
-            dataGridView1.Columns[0].Width = 40;
+            dataGridView1.Columns[0].Width = 66;
             dataGridView1.Columns[0].HeaderText = "Price";
             for (int k = 1; k < data.GetLength(0); k++)
             {
