@@ -142,7 +142,15 @@ namespace OptionsCalc
                             try 
                             {
                                 IVchangeRate = Convert.ToDouble(IVdata[2]);
-                                doesIVChange = true;
+                                if (IVchangeRate < 0)
+                                {
+                                    Error("Cannot have negative IV change: \nExample: If you want a decrease of 30%, type 0.7");
+                                }
+                                else
+                                {
+                                    doesIVChange = true;
+                                }
+
                             }
                             catch
                             {
@@ -454,7 +462,7 @@ namespace OptionsCalc
                     }
                     if ((rangeOfIVChange == 2 && IVchangeEnd < IVchangeStart) || IVchangeEnd < 0 || IVchangeStart < 0)
                     {
-                        Error("Invalid IV Change Input");
+                        Error("Invalid IV Change Date");
                         doesIVChange = false;
                     }
                     IVchangeStart += 2;
@@ -522,7 +530,7 @@ namespace OptionsCalc
                          
                             if (doesIVChange && rangeOfIVChange == 1 && j >= IVchangeStart)
                             {
-                                double ivprime = iv * (1 + IVchangeRate);
+                                double ivprime = iv * (IVchangeRate);
                                 if (isCall)
                                 {
                                     if (isLong)
@@ -553,7 +561,7 @@ namespace OptionsCalc
                             }
                             else if (doesIVChange && rangeOfIVChange == 2 && j >= IVchangeStart)
                             {
-                                double ivprime = iv * (1 + IVchangeRate * (j - IVchangeStart));
+                                double ivprime = iv * (IVchangeRate * (j - IVchangeStart));
                                 if(j > IVchangeEnd)
                                 {
                                     ivprime = iv * (1 + IVchangeRate * (IVchangeEnd - IVchangeStart));
@@ -773,7 +781,7 @@ namespace OptionsCalc
         private void textBox5_Hover(object sender, EventArgs e)
         {
             TextBox TB = (TextBox)sender;
-            tt.Show("Example: IV 9/21 -0.5 or IV 9/21-9/27 0.3", TB, TB.Width, 0, 4000);
+            tt.Show("Example: IV 9/21 0.9 or IV 9/21-9/27 1.3", TB, TB.Width, 0, 4000);
         }
 
         private void textBox5_MouseClick(object sender, MouseEventArgs e)
