@@ -716,7 +716,7 @@ namespace OptionsCalc
                             }
                         }
                     }
-                    Console.WriteLine(mergedProfit[20, 20]);
+                    
                     for (int i = 0; i < mergedProfit.GetLength(0); i++)
                     {
                         for (int j = 1; j < mergedProfit.GetLength(1); j++)
@@ -739,7 +739,7 @@ namespace OptionsCalc
                             mergedProfit[i, j] = Math.Round(mergedProfit[i, j], 2);
                         }
                     }
-                    Console.WriteLine(mergedProfit[20, 20]);
+                    
                     if (lines.Length > 1)
                     {
                         Form2 form2merged;
