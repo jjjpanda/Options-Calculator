@@ -70,7 +70,7 @@ namespace OptionsCalc
                 {
 
                     double a = data[i, j];
-                    int x = Convert.ToInt32(data[i, j]);
+                    int x = Convert.ToInt32(a);
                     
                     if (x > 0)
                     {

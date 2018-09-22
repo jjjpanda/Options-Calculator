@@ -13,6 +13,8 @@ namespace OptionsCalc
 {
     public partial class Form1 : Form
     {
+        int comments, sumNumOfContracts;
+
         int range;
         double percentInterval = 1.05;
 
@@ -106,7 +108,6 @@ namespace OptionsCalc
 
             if(e.Button == MouseButtons.Left)
             {
-
                 textBox5.Visible = false;
                 String input = richTextBox1.Text;
                 String[] lines = input.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
@@ -166,8 +167,14 @@ namespace OptionsCalc
                 //
                 // Check all options written in text box
                 //
+                comments = 0;
                 for (int a = 0; a < lines.Length; a++)
                 {
+                    if (lines[a].Substring(0, 2).Equals("//"))
+                    {
+                        comments++;
+                        continue;
+                    }
                     String[] data = lines[a].Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
                     if (data.Length <= 1)
                     {
@@ -334,6 +341,11 @@ namespace OptionsCalc
                             return;
                         }
                     }
+                    if(numOfContracts < 1)
+                    {
+                        continue;
+                    }
+                    sumNumOfContracts += numOfContracts;
 
                     //
                     // div yield and interest rate
@@ -496,7 +508,7 @@ namespace OptionsCalc
                     greeks[2] += theta;
                     greeks[3] += vega;
                     greeks[4] += rho;
-                    greeks[5] += iv;
+                    greeks[5] += iv * numOfContracts;
 
                     //
                     // Calculate Profit
@@ -607,7 +619,9 @@ namespace OptionsCalc
                         }
                     }
 
+                    //
                     //profit at expiry
+                    //
                     for (int i = 0; i < profit.GetLength(0); i++)
                     {
                         double underlying = profit[i, 0];
@@ -628,11 +642,11 @@ namespace OptionsCalc
                         {
                             if (isLong)
                             { 
-                                profit[i, j] = Math.Max(numOfContracts * ((-1 * optionBoughtAt) + (-1 * underlying + x)), (-1 * optionBoughtAt));
+                                profit[i, j] = numOfContracts * Math.Max(((-1 * optionBoughtAt) + (-1 * underlying + x)), (-1 * optionBoughtAt));
                             }
                             else if (!isLong)
                             {
-                                profit[i, j] = Math.Min(numOfContracts * (optionBoughtAt - (-1 * underlying + x)), optionBoughtAt);
+                                profit[i, j] = numOfContracts * Math.Min((optionBoughtAt - (-1 * underlying + x)), optionBoughtAt);
                             }
                         }
                     }
@@ -694,13 +708,21 @@ namespace OptionsCalc
                             }
                         }
                     }
+                    Console.WriteLine(mergedProfit[20, 20]);
                     for (int i = 0; i < mergedProfit.GetLength(0); i++)
                     {
                         for (int j = 1; j < mergedProfit.GetLength(1); j++)
                         {
                             if (!checkBox2.Checked) 
                             {
-                                mergedProfit[i, j] /= (Math.Abs(mergedEntryCost) / 100);
+                                if(mergedEntryCost != 0)
+                                {
+                                    mergedProfit[i, j] /= (Math.Abs(mergedEntryCost) / 100);
+                                }
+                                else
+                                {
+                                    mergedProfit[i, j] /= (0.0001 / 100);
+                                }
                             }
                             else
                             {
@@ -709,6 +731,7 @@ namespace OptionsCalc
                             mergedProfit[i, j] = Math.Round(mergedProfit[i, j], 2);
                         }
                     }
+                    Console.WriteLine(mergedProfit[20, 20]);
                     if (lines.Length > 1)
                     {
                         Form2 form2merged;
@@ -728,13 +751,14 @@ namespace OptionsCalc
                     }
                     if (checkBox3.Checked && lines.Length > 1)
                     {
-                        greeks[5] /= lines.Length; 
+                        greeks[5] /= sumNumOfContracts; 
                         Form3 form3 = new Form3(GetColumn(mergedProfit, 0), GetColumn(mergedProfit, mergedProfit.GetLength(1) - 1), greeks, "Strategy");
                         form3.Show();
                     }
                     greeks = new double[6];
                     mergedProfitList.Clear();
                     mergedEntryCost = 0;
+                    sumNumOfContracts = 0;
                 }
             }
         }
@@ -828,16 +852,6 @@ namespace OptionsCalc
             Console.Write(Environment.NewLine + Environment.NewLine);
         }
         Console.ReadLine();
-        */
-
-        /* call greeks
-        double delta = Math.Exp(-1 * divYield * t) * CNDF(D1(priceUnderlying, x, t, divYield, r, iv));
-        double gamma = Math.Exp(-1 * divYield * t) * NDF(D1(priceUnderlying, x, t, divYield, r, iv)) / (priceUnderlying * iv * Math.Sqrt(t));
-        double theta = (-(NDF(D1(priceUnderlying, x, t, divYield, r, iv)) / (2 * Math.Sqrt(t)) * priceUnderlying * iv * Math.Exp(-1 * divYield * t)) +
-                (divYield * priceUnderlying * Math.Exp(-1 * divYield * t) * CNDF(D1(priceUnderlying, x, t, divYield, r, iv)))
-                ) / 365;
-        double vega = priceUnderlying / 100 * Math.Exp(-1 * divYield * t) * Math.Sqrt(t) * NDF(D1(priceUnderlying, x, t, divYield, r, iv));
-        double rho = t / 100 * x * CNDF(D2(priceUnderlying, x, t, divYield, r, iv));
         */
     }
 }
