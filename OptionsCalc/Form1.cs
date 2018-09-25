@@ -37,6 +37,16 @@ namespace OptionsCalc
             textBox5.ContextMenu = new ContextMenu();
         }
 
+        private void Form1_Click(object sender, EventArgs e)
+        {
+            textBox5.Visible = false;
+        }
+
+        private void richTextBox1_Click(object sender, EventArgs e)
+        {
+            textBox5.Visible = false;
+        }
+
         static double[,] Copy(double[,] x)
         {
             double[,] copy = new double[x.GetLength(0), x.GetLength(1)];
@@ -141,7 +151,7 @@ namespace OptionsCalc
                             }
                             try 
                             {
-                                IVchangeRate = Convert.ToDouble(IVdata[2]);
+                                IVchangeRate = Convert.ToDouble(IVdata[2].Replace(",","."));
                                 if (IVchangeRate < 0)
                                 {
                                     Error("Cannot have negative IV change: \nExample: If you want a decrease of 30%, type 0.7");
@@ -356,20 +366,20 @@ namespace OptionsCalc
                     sumNumOfContracts += numOfContracts;
 
                     //
-                    // div yield and interest rate
+                    // underying, div yield and interest rate
                     //
                     try
                     {
-                        priceUnderlying = Convert.ToDouble(textBox1.Text);
+                        priceUnderlying = Convert.ToDouble(textBox1.Text.Replace(",", "."));
                         divYield = 0;
                         if (!textBox2.Text.Equals("") && !textBox2.Text.Contains("\r") && !textBox2.Text.Contains("\n"))
                         {
-                            divYield = Convert.ToDouble(textBox2.Text) / 100;
+                            divYield = Convert.ToDouble(textBox2.Text.Replace(",", ".")) / 100;
                         }
                         r = 0;
                         if (!textBox4.Text.Equals("") && !textBox4.Text.Contains("\r") && !textBox4.Text.Contains("\n"))
                         {
-                            r = Convert.ToDouble(textBox4.Text) / 100;
+                            r = Convert.ToDouble(textBox4.Text.Replace(",", ".")) / 100;
                         }
                     }
                     catch
@@ -428,7 +438,7 @@ namespace OptionsCalc
                     //
                     double iv = 0.20;
                     double priceOfOptionTheoretical = 0;
-                    while (Loss(priceOfOption, priceOfOptionTheoretical) > 0.00025)
+                    while (Loss(priceOfOption, priceOfOptionTheoretical) > 0.00001)
                     {
                         if (isCall)
                         {
@@ -439,12 +449,22 @@ namespace OptionsCalc
                             priceOfOptionTheoretical = -1 * priceUnderlying * Math.Exp(-1 * divYield * t) * CNDF(-1 * D1(priceUnderlying, x, t, divYield, r, iv)) + x * Math.Exp(-1 * r * t) * CNDF(-1 * D2(priceUnderlying, x, t, divYield, r, iv));
                         }
                         if (priceOfOption > priceOfOptionTheoretical)
-                        {
-                            iv += 0.00001;
+                        { 
+                            iv += Loss(priceOfOption, priceOfOptionTheoretical) * 0.1;
+                            if(iv < 0)
+                            {
+                                Error("Invalid:\nCalculation Impossible");
+                                return;
+                            }
                         }
                         if (priceOfOption < priceOfOptionTheoretical)
                         {
-                            iv -= 0.00001;
+                            iv -= Loss(priceOfOption, priceOfOptionTheoretical) * 0.1;
+                            if (iv < 0)
+                            {
+                                Error("Invalid:\nCalculation Impossible");
+                                return;
+                            }
                         }
                     }
 
@@ -790,6 +810,17 @@ namespace OptionsCalc
             {
                 textBox5.Clear();
             }
+        }
+
+        private void newToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            textBox1.Clear();
+            textBox2.Clear();
+            textBox4.Clear();
+            numericUpDown1.Value = 21;
+            textBox3.Text = "0.5";
+            textBox5.Text = "IV";
+            richTextBox1.Clear();
         }
 
         private void saveToolStripMenuItem_Click(object sender, EventArgs e)
