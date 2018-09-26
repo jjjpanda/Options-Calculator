@@ -494,7 +494,7 @@ namespace OptionsCalc
                     }
                     if (rangeOfIVChange == 2)
                     {
-                        IVchangeRate /= (IVchangeEnd - IVchangeStart);
+                        IVchangeRate = Math.Pow(IVchangeRate, (double)1/(IVchangeEnd - IVchangeStart));
                     }
 
                     //
@@ -548,7 +548,7 @@ namespace OptionsCalc
                         {
                             double tPrime = ((profit.GetLength(1) - j)-2) / 365.0;
                          
-                            if (doesIVChange && rangeOfIVChange == 1 && j >= IVchangeStart)
+                            if (doesIVChange && rangeOfIVChange == 1 && j+1 >= IVchangeStart)
                             {
                                 double ivprime = iv * (IVchangeRate);
                                 if (isCall)
@@ -579,12 +579,12 @@ namespace OptionsCalc
                                     }
                                 }
                             }
-                            else if (doesIVChange && rangeOfIVChange == 2 && j >= IVchangeStart)
+                            else if (doesIVChange && rangeOfIVChange == 2 && j+2 >= IVchangeStart)
                             {
-                                double ivprime = iv * (IVchangeRate * (j - IVchangeStart));
-                                if(j > IVchangeEnd)
+                                double ivprime = iv * Math.Pow(IVchangeRate, (j - IVchangeStart +2));
+                                if(j+2 > IVchangeEnd)
                                 {
-                                    ivprime = iv * (1 + IVchangeRate * (IVchangeEnd - IVchangeStart));
+                                    ivprime = iv * Math.Pow(IVchangeRate, (IVchangeEnd - IVchangeStart));
                                 }
                                 if (isCall)
                                 {
