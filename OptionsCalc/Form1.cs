@@ -451,21 +451,16 @@ namespace OptionsCalc
                         if (priceOfOption > priceOfOptionTheoretical)
                         { 
                             iv += Loss(priceOfOption, priceOfOptionTheoretical) * 0.1;
-                            if(iv < 0)
-                            {
-                                Error("Invalid:\nCalculation Impossible");
-                                return;
-                            }
                         }
                         if (priceOfOption < priceOfOptionTheoretical)
                         {
                             iv -= Loss(priceOfOption, priceOfOptionTheoretical) * 0.1;
-                            if (iv < 0)
-                            {
-                                Error("Invalid:\nCalculation Impossible");
-                                return;
-                            }
                         }
+                    }
+                    if (iv < 0)
+                    {
+                        Error("Invalid:\nCalculation Impossible");
+                        return;
                     }
 
                     //
