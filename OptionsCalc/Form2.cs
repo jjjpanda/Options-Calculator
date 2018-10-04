@@ -63,13 +63,21 @@ namespace OptionsCalc
 
         private void dataGridView1_CellUIChange(object sender, DataGridViewCellFormattingEventArgs e)
         {
+            for (int i = 0; i < data.GetLength(0); i++)
+            {
+                for (int j = 0; j < data.GetLength(1); j++)
+                {
+                    Console.Write(data[i, j] + " ");
+                }
+                Console.Write(Environment.NewLine + Environment.NewLine);
+            }
             
             for (int i = 0; i < data.GetLength(0); i++)
             {
                 for (int j = 1; j < data.GetLength(1); j++)
                 {
-
                     double a = data[i, j];
+                    Console.Write(i +" "+ j +" "+ a);
                     int x = Convert.ToInt32(a);
                     
                     if (x > 0)
