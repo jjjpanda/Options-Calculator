@@ -96,7 +96,7 @@ namespace OptionsCalc
 
         static double Loss(double a, double b)
         {
-            return Math.Sqrt((a - b) * (a - b));
+            return Math.Abs(Math.Sqrt(a)-Math.Sqrt(b));
         }
 
         static double D1(double p, double x, double t, double q, double r, double sigma)
@@ -436,8 +436,16 @@ namespace OptionsCalc
                     //
                     // Calculate IV
                     //
-                    double iv = 0.20;
+                    double iv = 0.01;
                     double priceOfOptionTheoretical = 0;
+                    if (isCall)
+                    {
+                        priceOfOptionTheoretical = priceUnderlying * Math.Exp(-1 * divYield * t) * CNDF(D1(priceUnderlying, x, t, divYield, r, iv)) - x * Math.Exp(-1 * r * t) * CNDF(D2(priceUnderlying, x, t, divYield, r, iv));
+                    }
+                    else if (!isCall)
+                    {
+                        priceOfOptionTheoretical = -1 * priceUnderlying * Math.Exp(-1 * divYield * t) * CNDF(-1 * D1(priceUnderlying, x, t, divYield, r, iv)) + x * Math.Exp(-1 * r * t) * CNDF(-1 * D2(priceUnderlying, x, t, divYield, r, iv));
+                    }
                     while (Loss(priceOfOption, priceOfOptionTheoretical) > 0.00001)
                     {
                         if (isCall)
@@ -448,13 +456,14 @@ namespace OptionsCalc
                         {
                             priceOfOptionTheoretical = -1 * priceUnderlying * Math.Exp(-1 * divYield * t) * CNDF(-1 * D1(priceUnderlying, x, t, divYield, r, iv)) + x * Math.Exp(-1 * r * t) * CNDF(-1 * D2(priceUnderlying, x, t, divYield, r, iv));
                         }
+                        Console.WriteLine(Loss(priceOfOption, priceOfOptionTheoretical));
                         if (priceOfOption > priceOfOptionTheoretical)
                         { 
-                            iv += Loss(priceOfOption, priceOfOptionTheoretical) * 0.1;
+                            iv += Math.Min(0.01, Loss(priceOfOption, priceOfOptionTheoretical)*0.01);
                         }
                         if (priceOfOption < priceOfOptionTheoretical)
                         {
-                            iv -= Loss(priceOfOption, priceOfOptionTheoretical) * 0.1;
+                            iv -= Math.Min(0.01, Loss(priceOfOption, priceOfOptionTheoretical)*0.01);
                         }
                     }
                     if (iv < 0)
@@ -876,16 +885,5 @@ namespace OptionsCalc
                     .ToArray();
         }
 
-        /*
-        for (int i = 0; i < mergedProfit.GetLength(0); i++)
-        {
-            for (int j = 0; j < mergedProfit.GetLength(1); j++)
-            {
-                Console.Write(mergedProfit[i, j] + " ");
-            }
-            Console.Write(Environment.NewLine + Environment.NewLine);
-        }
-        Console.ReadLine();
-        */
     }
 }
