@@ -68,6 +68,14 @@ namespace OptionsCalc
 
         static double CNDF(double x)
         {
+            if(x < -5)
+            {
+                return 0;
+            }
+            if (x > 5)
+            {
+                return 1;
+            }
             // constants
             double a1 = 0.254829592;
             double a2 = -0.284496736;
@@ -96,7 +104,8 @@ namespace OptionsCalc
 
         static double Loss(double a, double b)
         {
-            return Math.Abs(Math.Sqrt(a)-Math.Sqrt(b));
+            //return Math.Abs(Math.Sqrt(a)-Math.Sqrt(b));
+            return a - b;
         }
 
         static double D1(double p, double x, double t, double q, double r, double sigma)
@@ -436,7 +445,9 @@ namespace OptionsCalc
                     //
                     // Calculate IV
                     //
-                    double iv = 0.01;
+                    double iv = Math.Sqrt(Math.PI * 2 / (t)) * priceOfOption / priceUnderlying;
+                    double vega = 0;
+                    Random rand = new Random();
                     double priceOfOptionTheoretical = 0;
                     if (isCall)
                     {
@@ -446,8 +457,26 @@ namespace OptionsCalc
                     {
                         priceOfOptionTheoretical = -1 * priceUnderlying * Math.Exp(-1 * divYield * t) * CNDF(-1 * D1(priceUnderlying, x, t, divYield, r, iv)) + x * Math.Exp(-1 * r * t) * CNDF(-1 * D2(priceUnderlying, x, t, divYield, r, iv));
                     }
-                    while (Loss(priceOfOption, priceOfOptionTheoretical) > 0.00001)
+                    while (Loss(priceOfOption, priceOfOptionTheoretical) > 0.00001 || Loss(priceOfOption, priceOfOptionTheoretical) < -0.00001)
                     {
+                        if (Loss(priceOfOption, priceOfOptionTheoretical) > priceOfOption / 10)
+                        {
+                            if (priceOfOption > priceOfOptionTheoretical)
+                            {
+                                iv += 0.075 + rand.NextDouble()/20;
+                            }
+                            if (priceOfOption < priceOfOptionTheoretical)
+                            {
+                                iv -= 0.075 + rand.NextDouble()/20;
+                            }
+                        }
+                        else {
+                            vega = priceUnderlying * Math.Exp(-1 * divYield * t) * Math.Sqrt(t) * NDF(D1(priceUnderlying, x, t, divYield, r, iv));
+                            Console.WriteLine(Loss(priceOfOption, priceOfOptionTheoretical));
+                            Console.WriteLine(vega);
+                            iv = iv + (Loss(priceOfOption, priceOfOptionTheoretical) / vega);
+                        }
+
                         if (isCall)
                         {
                             priceOfOptionTheoretical = priceUnderlying * Math.Exp(-1 * divYield * t) * CNDF(D1(priceUnderlying, x, t, divYield, r, iv)) - x * Math.Exp(-1 * r * t) * CNDF(D2(priceUnderlying, x, t, divYield, r, iv));
@@ -455,15 +484,6 @@ namespace OptionsCalc
                         else if (!isCall)
                         {
                             priceOfOptionTheoretical = -1 * priceUnderlying * Math.Exp(-1 * divYield * t) * CNDF(-1 * D1(priceUnderlying, x, t, divYield, r, iv)) + x * Math.Exp(-1 * r * t) * CNDF(-1 * D2(priceUnderlying, x, t, divYield, r, iv));
-                        }
-                        Console.WriteLine(Loss(priceOfOption, priceOfOptionTheoretical));
-                        if (priceOfOption > priceOfOptionTheoretical)
-                        { 
-                            iv += Math.Min(0.01, Loss(priceOfOption, priceOfOptionTheoretical)*0.01);
-                        }
-                        if (priceOfOption < priceOfOptionTheoretical)
-                        {
-                            iv -= Math.Min(0.01, Loss(priceOfOption, priceOfOptionTheoretical)*0.01);
                         }
                     }
                     if (iv < 0)
@@ -504,7 +524,7 @@ namespace OptionsCalc
                     //
                     //Calculate Greeks
                     //
-                    double delta = 0, gamma = 0, theta = 0, vega = 0, rho = 0;
+                    double delta = 0, gamma = 0, theta = 0, rho = 0;
                     if (isCall)
                     {
                         delta = Math.Exp(-1 * divYield * t) * CNDF(D1(priceUnderlying, x, t, divYield, r, iv));
