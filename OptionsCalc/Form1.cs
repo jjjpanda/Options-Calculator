@@ -182,14 +182,15 @@ namespace OptionsCalc
                         }
                     }
                 }
+                /*
                 else if(textBox5.Text == "")
                 {
                     //Do nothing, I suppose.
                 }
                 else
                 {
-                    Error("Invalid IV Change Input");
                 }
+                */
 
                 //
                 // Check all options written in text box
@@ -393,7 +394,7 @@ namespace OptionsCalc
                     }
                     catch
                     {
-                        Error("Invalid Stock Price, Div Yield, or Interest Rate");
+                        Error("Invalid Stock Price, Div Yield, or Interest Rate\nErase and try again");
                         return;
                     }
 
